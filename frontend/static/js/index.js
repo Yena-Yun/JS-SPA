@@ -8,7 +8,8 @@ const router = async () => {
     { path: '/404', view: () => console.log('Not Found') },
   ];
 
-  // 현재 route와 현재 페이지 경로가 일치하는지 테스트
+  // 현재 route와 현재 페이지 경로가 일치하는지 여부를 isMatch에 true/false로 넣어서
+  // 새 routes 배열 반환
   const potentialMatches = routes.map((route) => {
     return {
       route: route,
@@ -16,11 +17,11 @@ const router = async () => {
     };
   });
 
-  // potentialMatches 배열의 객체 중에 isMatch가 true인 객체만 따로 변수에 담기
+  // isMatch가 true인 객체만 따로 변수에 담기
   let match = potentialMatches.find((potentialMatch) => potentialMatch.isMatch);
 
-  // routes 중에 isMatch와 일치하는 객체가 없으면(= 찾을 수 없는 페이지이면)
-  // 404 페이지로 이동
+  // isMatch가 true인 객체가 없으면(= 페이지 중에 찾을 수 없으면)
+  // Not Found('/404') 페이지로 이동
   if (!match) {
     match = {
       route: routes[routes.length - 1],
@@ -28,7 +29,7 @@ const router = async () => {
     };
   }
 
-  // routes의 view 함수 콘솔에 출력
+  // routes의 view 함수(각 페이지의 내용) 콘솔에 출력
   console.log(match.route.view());
 };
 
