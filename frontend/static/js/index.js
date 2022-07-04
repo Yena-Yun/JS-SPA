@@ -58,7 +58,7 @@ const router = async () => {
   // Not Found(404) 페이지 = routes 배열의 맨 마지막 순서
   if (!match) {
     match = {
-      route: routes[routes.length - 1],
+      route: routes[routes.length - 1], // 404 페이지로 이동하는 route 객체 (routes 배열의 맨 마지막 요소)
       isMatch: true,
     };
   }
