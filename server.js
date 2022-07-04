@@ -3,6 +3,7 @@ const path = require('path');
 
 const app = express();
 
+// * 'Failed to load module script: ~' 에러 해결
 // middleware(express.static)로 기본 경로 설정
 //  => '/static'으로 시작되는 경로로 접속 시 frontend/static을 기본 고정 경로로 설정
 app.use(
