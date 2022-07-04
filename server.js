@@ -1,5 +1,5 @@
 const express = require('express');
-const path = require('path');
+const path = require('path'); // path는 express 내장 모듈이어서 따로 설치 안 해줘도 됨
 
 const app = express();
 

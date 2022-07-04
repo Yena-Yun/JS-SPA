@@ -46,7 +46,7 @@ const router = async () => {
   // map: 배열의 요소를 조작한 뒤 '새로운 배열'을 반환
   const potentialMatches = routes.map((route) => {
     return {
-      route,
+      route: route, // 이해를 돕기 위해 둘 다 씀
       isMatch: location.pathname === route.path,
     };
   });
@@ -66,8 +66,9 @@ const router = async () => {
   // routes의 view 함수(각 페이지의 내용)를 실행시켜 콘솔에 출력
   // console.log(match.route.view());
 
-  // 활성화된 view(이동한 페이지에 해당하는 class)를 따로 변수에 담기
-  // => new 키워드로 객체로 만들어 넣음
+  // 활성화된 view class를 따로 변수에 담기
+  // * class도 함수처럼 '실행'시켜야 작동
+  // * new 키워드를 앞에 붙여 객체로 만들기
   const view = new match.route.view();
 
   // index.html의 #app div에 view의 각 class의 getHtml 함수를 실행하여 페이지별 HTML을 렌더링한다.
@@ -75,14 +76,14 @@ const router = async () => {
   document.querySelector('#app').innerHTML = await view.getHtml();
 };
 
-// * popstate 이벤트: 뒤로가기나 새로고침 시 발생
+// * window의 popstate 이벤트: 뒤로가기나 새로고침 시 발생
 // => 뒤로가기나 새로고침 시 해당 페이지로 이동하도록
 window.addEventListener('popstate', router);
 
 // DOM이 렌더링되면('DOMContentLoaded') 다음 실행
 document.addEventListener('DOMContentLoaded', () => {
   // 클릭된 target 요소(e.target)에 'data-link' attribute가 있다면
-  // (* e.target.matches(css선택자): css 선택자를 포함한 HTML의 요소를 찾는다)
+  // (* e.target.matches('css 선택자 문자열'): css 선택자(id, class, attribute)를 포함한 HTML의 요소를 찾는다)
   document.body.addEventListener('click', (e) => {
     if (e.target.matches('[data-link]')) {
       e.preventDefault();
@@ -91,5 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // data-link 요소가 없는 페이지도 라우팅 로직 필요
   router();
 });
