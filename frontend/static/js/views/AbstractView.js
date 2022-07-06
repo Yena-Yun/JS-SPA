@@ -1,7 +1,10 @@
 // 모든 페이지의 초기 세팅
 
 export default class {
-  constructor() {}
+  // 생성자 함수에서 params를 받는다.
+  constructor(params) {
+    this.params = params;
+  }
 
   // 페이지 title 변경
   setTitle(title) {

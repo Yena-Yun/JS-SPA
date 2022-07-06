@@ -7,6 +7,27 @@ import NotFound from './views/NotFound.js';
 import Posts from './views/Posts.js';
 import Settings from './views/Settings.js';
 
+// 정규식으로 파라미터 나누기
+const pathToRegex = (path) =>
+  new RegExp('^' + path.replace(/\//g, '\\/').replace(/:\w+/g, '(.+)') + '$');
+
+// 활성화된 페이지의 파라미터를 가져와서 배열에 담기
+const getParams = (match) => {
+  const values = match.result.slice(1);
+  const keys = Array.from(match.route.path.matchAll(/:(\w+)/g)).map(
+    (result) => result[1]
+  );
+
+  // Object.fromEntries
+  // [['foo', 'bar'], ['baz', 42], ...] 2차원 배열 형태를
+  // key: value 쌍의 객체로 만든다. ({ foo: 'bar', baz: 42, ...})
+  return Object.fromEntries(
+    keys.map((key, i) => {
+      return [key, values[i]];
+    })
+  );
+};
+
 // 페이지 전환하는 함수
 const navigateTo = (url) => {
   // 1) state: 페이지 전환 시 넘겨줄 데이터 (없으면 null)
@@ -37,6 +58,8 @@ const router = async () => {
     // 수정된 view: 해당 페이지의 class를 바로 넣어줌 (HTML 렌더링은 class 내부의 getHtml 함수를 실행해야)
     { path: '/', view: Dashboard },
     { path: '/posts', view: Posts },
+    // 파라미터가 추가되었을 경우의 posts route 추가
+    { path: '/posts/:id/:something', view: Posts },
     { path: '/settings', view: Settings },
     { path: '/404', view: NotFound },
   ];
@@ -47,19 +70,26 @@ const router = async () => {
   const potentialMatches = routes.map((route) => {
     return {
       route: route, // 이해를 돕기 위해 둘 다 씀
-      isMatch: location.pathname === route.path,
+      // isMatch: location.pathname === route.path,
+      // result로 변경하고 정규식과 일치하는 pathname을 담는다.
+      result: location.pathname.match(pathToRegex(route.path)),
     };
   });
 
   // 조작한 배열 potentialMatches에서 isMatch가 true인 요소만 따로 변수에 담기
-  let match = potentialMatches.find((potentialMatch) => potentialMatch.isMatch);
+  // let match = potentialMatches.find((potentialMatch) => potentialMatch.isMatch);
+  // result(정규식과 일치하는 pathname)이 null이 아닌 경우 담기
+  let match = potentialMatches.find(
+    (potentialMatch) => potentialMatch.result !== null
+  );
 
-  // 서로 경로가 일치하는 경우가 없으면 Not Found(404) 페이지로 이동
-  // Not Found(404) 페이지 = routes 배열의 맨 마지막 순서
+  // 일치하는 경로(페이지)가 없으면 404 페이지로 이동(= routes 배열의 맨 마지막 순서)
   if (!match) {
     match = {
-      route: routes[routes.length - 1], // 404 페이지로 이동하는 route 객체 (routes 배열의 맨 마지막 요소)
-      isMatch: true,
+      route: routes[routes.length - 1], // route = 404 페이지로 이동하는 routes의 객체
+      // isMatch: true,
+      // 404로 이동 후 result에는 해당 pathname 담기
+      result: [location.pathname],
     };
   }
 
@@ -69,7 +99,10 @@ const router = async () => {
   // 활성화된 view class를 따로 변수에 담기
   // * class도 함수처럼 '실행'시켜야 작동
   // * new 키워드를 앞에 붙여 객체로 만들기
-  const view = new match.route.view();
+  // const view = new match.route.view();
+
+  // match 정보를 getParams에 보내 배열로 출력해서 view에 담기
+  const view = new match.route.view(getParams(match));
 
   // index.html의 #app div에 view의 각 class의 getHtml 함수를 실행하여 페이지별 HTML을 렌더링한다.
   // ** 앞에 await를 붙여줘야 페이지가 모두 렌더링되고 나서 다른 로직들(예: 뒤로가기)이 실행됨
